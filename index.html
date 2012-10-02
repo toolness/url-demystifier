@@ -111,7 +111,7 @@ function showURLInfo() {
     tls_info: function(done) {
       var jsonURL = "http://head.toolness.org/tls/" + info.host + "/443";
       return jQuery.getJSON(jsonURL, function(tls) {
-        var ctx = {};
+        var ctx = {host: info.host};
         if (tls.cert.subject.O) {
           ctx.is_ev_cert = true;
           ctx.organization = tls.cert.subject.O;
@@ -124,12 +124,9 @@ function showURLInfo() {
     geoip_info: function(done) {
       var jsonURL = "http://freegeoip.net/json/" + info.host;
       return jQuery.getJSON(jsonURL, function(geoip) {
-        if (geoip.city && geoip.region_name && geoip.country_name) {
-          geoip.location = "in " + geoip.city + ", " + geoip.region_name +
-                           ", " + geoip.country_name;
-        } else {
-          geoip.location = "here";
-        }
+        geoip.has_name = geoip.city && geoip.region_name &&
+                         geoip.country_name;
+        geoip.host = info.host;
         done(geoip);
       });
     },

@@ -16,12 +16,13 @@ the Web while ensuring its authenticity and confidentiality through the use of
     you can access this URL without any warnings.</p>
 
   {{#is_ev_cert}}
-  <p>The certificate authority also believes that the host belongs to 
-    <strong>{{organization}} ({{country}})</strong>.</p>
+  <p>The certificate authority also believes that {{host}} belongs to 
+    an organization called <strong>{{organization}} 
+    ({{country}})</strong>.</p>
   {{/is_ev_cert}}
   
   {{^is_ev_cert}}
-  <p>The certificate authority does <em>not</em> certify that the host belongs
+  <p>The certificate authority does <em>not</em> certify that {{host}} belongs
     to a particular individual or organization, however.</p>
   {{/is_ev_cert}}
 </div>
@@ -63,7 +64,19 @@ the Web while ensuring its authenticity and confidentiality through the use of
 <div class="well">
   <div class="row">
     <div class="span5"><img src="http://maps.googleapis.com/maps/api/staticmap?center={{latitude}},{{longitude}}&amp;zoom=8&amp;sensor=false&amp;size=470x470" class="img-polaroid"></div>
-    <div class="span6"><p>According to the <a href="http://www.maxmind.com/en/geolocation_landing">MaxMind GeoIP Database</a>, a machine currently hosting the URL’s content is located {{location}}.</p></div>
+    <div class="span6">
+      <p>A machine currently hosting the URL’s content is located in or near
+      
+      {{#has_name}}
+      {{city}}, {{region_name}}, {{country_name}}.
+      {{/has_name}}
+      
+      {{^has_name}}
+      latitude {{latitude}}, longitude {{longitude}}.
+      {{/has_name}}
+      </p>
+      <p>This is found by using a <a href="http://computer.howstuffworks.com/dns.htm">domain name server</a> to find the IP address of {{host}}, and then looking up that IP address in the <a href="http://www.maxmind.com/en/geolocation_landing">MaxMind GeoIP Database</a>.</p>
+    </div>
   </div>
 </div>
 {{/geoip_info}}
