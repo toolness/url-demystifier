@@ -88,7 +88,7 @@ function showURLInfo() {
   if (templateRequests.state() != "resolved")
     return;
 
-  var url = urlField.val();
+  var url = decodeURIComponent(window.location.hash.slice(1));
   var info = parseUri(url);
   
   if (url === lastUrlFieldValue)
@@ -166,7 +166,11 @@ function showURLInfo() {
 
 urlField.bind("keyup change", function() {
   clearTimeout(timeout);
-  timeout = setTimeout(showURLInfo, TIMEOUT_MS);
+  timeout = setTimeout(function() {
+    var url = urlField.val();
+    if (url)
+      window.location.hash = "#" + encodeURIComponent(url);
+  }, TIMEOUT_MS);
 });
 
 TEMPLATES.forEach(function(name) {
@@ -176,7 +180,14 @@ TEMPLATES.forEach(function(name) {
   templateRequests = jQuery.when(req, templateRequests);
 });
 
-templateRequests.done(function() {
-  urlField.trigger("change");
-});
+templateRequests.done(showURLInfo);
+
+onhashchange = function() {
+  var hashURL = decodeURIComponent(window.location.hash.slice(1));
+  if (hashURL != urlField.val())
+    urlField.val(hashURL);
+  showURLInfo();
+};
+
+onhashchange();
 </script>
