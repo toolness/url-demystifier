@@ -1,0 +1,70 @@
+{{#is_http}}
+<p>This URL represents an internet resource that is accessed using the <em>Hypertext Transfer Protocol</em> (<strong>http</strong>),
+created by <a href="http://en.wikipedia.org/wiki/Tim_Berners-Lee">Tim Berners-Lee</a> in 1990. Its authenticity and confidentiality cannot be guaranteed.</p>
+{{/is_http}}
+
+{{#is_https}}
+<p>This URL represents an internet resource that is accessed using the <em>Hypertext Transfer Protocol Secure</em> (<strong>https</strong>),
+created by Netscape circa 1995 as a way to transfer information over
+the Web while ensuring its authenticity and confidentiality through the use of
+<a href="http://www.youtube.com/watch?v=wXB-V_Keiu8&amp;feature=plcp">public key cryptography</a>.</p>
+
+{{#tls_info}}
+<div class="alert alert-success">
+  <p>The host is currently certified by the <a href="http://duckduckgo.com/?q=wikipedia%20{{issuer}}%20!">{{issuer}}</a> certificate 
+    authority. If this authority is trusted by your browser,
+    you can access this URL without any warnings.</p>
+
+  {{#is_ev_cert}}
+  <p>The certificate authority also believes that the host belongs to 
+    <strong>{{organization}} ({{country}})</strong>.</p>
+  {{/is_ev_cert}}
+  
+  {{^is_ev_cert}}
+  <p>The certificate authority does <em>not</em> certify that the host belongs
+    to a particular individual or organization, however.</p>
+  {{/is_ev_cert}}
+</div>
+{{/tls_info}}
+{{/is_https}}
+
+<p>The resource is hosted by <strong>{{host}}</strong>, whose top-level
+domain is <a href="http://en.wikipedia.org/wiki/.{{tld}}">.{{tld}}</a>.</p>
+
+{{#header_info}}
+
+{{#has_headers}}
+<div class="well">
+<p>Currently, accessing the URL provides the following <a href="http://net.tutsplus.com/tutorials/other/http-headers-for-dummies/">HTTP headers</a>.</p>
+
+<table class="table">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+{{#headers}}
+  <tr>
+    <td>{{name}}</td>
+    <td>{{value}}</td>
+  </tr>
+{{/headers}}
+</table>
+
+{{#is_embeddable}}
+<p>You can embed the content of this URL into a Web page with the following HTML:</p>
+<pre>{{embed_html}}</pre>
+{{/is_embeddable}}
+
+</div>
+{{/has_headers}}
+
+{{/header_info}}
+
+{{#geoip_info}}
+<div class="well">
+  <div class="row">
+    <div class="span5"><img src="http://maps.googleapis.com/maps/api/staticmap?center={{latitude}},{{longitude}}&amp;zoom=8&amp;sensor=false&amp;size=470x470" class="img-polaroid"></div>
+    <div class="span6"><p>According to the <a href="http://www.maxmind.com/en/geolocation_landing">MaxMind GeoIP Database</a>, the machine currently hosting the URL’s content is located {{location}}.</p></div>
+  </div>
+</div>
+{{/geoip_info}}

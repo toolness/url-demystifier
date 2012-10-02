@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+<style>
+body {
+  padding-top: 50px;
+}
+
+#url {
+  width: 100%;
+}
+</style>
+<title>URL Demystifier</title>
+<div class="container">
+  <div class="hero-unit">
+    <h1>URL Demystifier</h1>
+    <p>Paste a URL in the field below to learn more about it.</p>
+    <input type="text" placeholder="http://" autofocus id="url">
+  </div>
+  <div id="info"></div>
+</div>
+<script src="js/parseurl.js"></script>
+<script src="js/mustache.js"></script>
+<script src="js/jquery.min.js"></script>
+<script>
+var TIMEOUT_MS = 300;
+var TEMPLATES = [
+  "http",
+  "unknown"
+];
+var PROTOCOL_TEMPLATES = {
+  http: 'http',
+  https: 'http'
+};
+var INTERESTING_HEADERS = [
+  "content-type",
+  "content-length",
+  "last-modified"
+];
+
+var timeout;
+var lastUrlFieldValue = null;
+var urlField = $("#url");
+var infoDiv = $("#info");
+var templateStrings = {};
+var templateRequests;
+
+jQuery.fn.extend({
+  abortDeferredTemplate: function() {
+    this.find(".deferred").each(function() {
+      var request = $(this).data("deferred").request;
+      if (request.abort)
+        request.abort();
+    });
+  },
+  renderDeferredTemplate: function(templateString, info, lambdas) {
+    var lastID = 0;
+    var divs = {};
+    var self = this;
+    
+    Object.keys(lambdas).forEach(function(key) {
+      var lambda = lambdas[key];
+      info[key] = function() {
+        return function(html) {
+          var id = lastID++;
+          var req = lambda(function(context) {
+            $(divs[id].element).html(Mustache.render(html, context))
+              .slideDown();
+          });
+          divs[id] = {
+            request: req,
+            element: null
+          };
+          return '<div class="deferred" id="deferred-tmp-' + id + '"></div>';
+        };
+      };
+    });
+    this.html(Mustache.render(templateString, info));
+    Object.keys(divs).forEach(function(id) {
+      var div = self.find("#deferred-tmp-" + id);
+      div.removeAttr("id").data("deferred", divs[id]).hide();
+      divs[id].element = div[0];
+    });
+  }
+});
+
+function showURLInfo() {
+  if (templateRequests.state() != "resolved")
+    return;
+
+  var url = urlField.val();
+  var info = parseUri(url);
+  
+  if (url === lastUrlFieldValue)
+    return;
+  lastUrlFieldValue = url;
+  infoDiv.abortDeferredTemplate();
+  if (!url)
+    return infoDiv.empty();
+    
+  var templateName = PROTOCOL_TEMPLATES[info.protocol] || 'unknown';
+  var templateString = templateStrings[templateName];
+  info['original_input'] = url;
+  info['is_' + info.protocol] = true;
+  if (info.host)
+    info.tld = info.host.split('.').slice(-1)[0];
+  infoDiv.renderDeferredTemplate(templateString, info, {
+    tls_info: function(done) {
+      var jsonURL = "http://head.toolness.org/tls/" + info.host + "/443";
+      return jQuery.getJSON(jsonURL, function(tls) {
+        var ctx = {};
+        if (tls.cert.subject.O) {
+          ctx.is_ev_cert = true;
+          ctx.organization = tls.cert.subject.O;
+          ctx.country = tls.cert.subject.C;
+        }
+        ctx.issuer = tls.cert.issuer.O;
+        done(ctx);
+      });
+    },
+    geoip_info: function(done) {
+      var jsonURL = "http://freegeoip.net/json/" + info.host;
+      return jQuery.getJSON(jsonURL, function(geoip) {
+        if (geoip.city && geoip.region_name && geoip.country_name) {
+          geoip.location = "in " + geoip.city + ", " + geoip.region_name +
+                           ", " + geoip.country_name;
+        } else {
+          geoip.location = "here";
+        }
+        done(geoip);
+      });
+    },
+    header_info: function(done) {
+      var jsonURL = "http://head.toolness.org/?url=" +
+                    encodeURIComponent(url);
+      return jQuery.getJSON(jsonURL, function(headers) {
+        var ctx = {
+          has_headers: false,
+          headers: [],
+          is_embeddable: false,
+          embed_html: null
+        };
+        if (headers['content-type'].match(/^text\/html/) &&
+            !headers['x-frame-options']) {
+          ctx.is_embeddable = true;
+          ctx.embed_html = '<iframe src="' + url + '"></iframe>';
+        }
+        if (headers['content-type'].match(/^image/)) {
+          ctx.is_embeddable = true;
+          ctx.embed_html = '<img src="' + url + '">';
+        }
+        INTERESTING_HEADERS.forEach(function(header) {
+          if (header in headers) {
+            ctx.headers.push({
+              name: header,
+              value: headers[header]
+            });
+            ctx.has_headers = true;
+          }
+        });
+        done(ctx);
+      });
+    }
+  });
+}
+
+urlField.bind("keyup change", function() {
+  clearTimeout(timeout);
+  timeout = setTimeout(showURLInfo, TIMEOUT_MS);
+});
+
+TEMPLATES.forEach(function(name) {
+  var req = jQuery.get("templates/" + name + ".html", function(html) {
+    templateStrings[name] = html;
+  });
+  templateRequests = jQuery.when(req, templateRequests);
+});
+
+templateRequests.done(function() {
+  urlField.trigger("change");
+});
+</script>
