@@ -103,8 +103,10 @@ function showURLInfo() {
   var templateString = templateStrings[templateName];
   info['original_input'] = url;
   info['is_' + info.protocol] = true;
-  if (info.host)
+  if (info.host) {
+    info.non_tld = info.host.split('.').slice(0, -1).join('.');
     info.tld = info.host.split('.').slice(-1)[0];
+  }
   infoDiv.renderDeferredTemplate(templateString, info, {
     tls_info: function(done) {
       var jsonURL = "http://head.toolness.org/tls/" + info.host + "/443";
