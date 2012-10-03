@@ -145,7 +145,15 @@ function showURLInfo() {
           ctx.is_embeddable = true;
           ctx.embed_html = '<iframe src="' + url + '"></iframe>';
         }
-        if (headers['content-type'].match(/^image/)) {
+        if (headers['content-type'].match(/^video\//)) {
+          ctx.is_embeddable = true;
+          ctx.embed_html = '<video src="' + url + '" controls></video>';
+        }
+        if (headers['content-type'].match(/^audio\//)) {
+          ctx.is_embeddable = true;
+          ctx.embed_html = '<audio src="' + url + '" controls></audio>';
+        }
+        if (headers['content-type'].match(/^image\//)) {
           ctx.is_embeddable = true;
           ctx.embed_html = '<img src="' + url + '">';
         }
