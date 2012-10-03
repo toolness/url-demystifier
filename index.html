@@ -39,6 +39,13 @@ var INTERESTING_HEADERS = [
   "location"
 ];
 
+var headerValueMassagers = {
+  "location": function(value) {
+    return '<a href="#' + Mustache.escape(encodeURIComponent(value)) + '">' +
+           Mustache.escape(value) + '</a>';
+  }
+};
+
 var timeout;
 var lastUrlFieldValue = null;
 var urlField = $("#url");
@@ -167,9 +174,14 @@ function showURLInfo() {
         }
         INTERESTING_HEADERS.forEach(function(header) {
           if (header in headers) {
+            var html;
+            if (header in headerValueMassagers)
+              html = headerValueMassagers[header](headers[header]);
+            else
+              html = Mustache.escape(headers[header]);
             ctx.headers.push({
               name: header,
-              value: headers[header]
+              value_html: html
             });
             ctx.has_headers = true;
           }
