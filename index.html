@@ -153,6 +153,14 @@ function showURLInfo() {
           ctx.is_embeddable = true;
           ctx.embed_html = '<audio src="' + url + '" controls></audio>';
         }
+        if (headers['content-type'].match(/javascript/)) {
+          ctx.is_embeddable = true;
+          ctx.embed_html = '<script src="' + url + '"></' + 'script>';
+        }
+        if (headers['content-type'].match(/^text\/css/)) {
+          ctx.is_embeddable = true;
+          ctx.embed_html = '<link rel="stylesheet" href="' + url + '">';
+        }
         if (headers['content-type'].match(/^image\//)) {
           ctx.is_embeddable = true;
           ctx.embed_html = '<img src="' + url + '">';
