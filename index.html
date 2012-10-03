@@ -156,6 +156,10 @@ function showURLInfo() {
           is_embeddable: false,
           embed_html: null
         };
+        if (headers['location'])
+          headers = {location: headers['location']};
+        if (!headers['content-type'])
+          headers['content-type'] = '';
         if (headers['content-type'].match(/^text\/html/) &&
             !headers['x-frame-options']) {
           ctx.is_embeddable = true;
@@ -182,7 +186,7 @@ function showURLInfo() {
           ctx.embed_html = '<img src="' + url + '">';
         }
         INTERESTING_HEADERS.forEach(function(header) {
-          if (header in headers) {
+          if (headers[header]) {
             var html;
             if (header in headerValueMassagers)
               html = headerValueMassagers[header](headers[header]);
