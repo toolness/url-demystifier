@@ -20,6 +20,7 @@ body {
   <div id="info"></div>
 </div>
 <script src="js/parseurl.js"></script>
+<script src="js/mimeparse.js"></script>
 <script src="js/mustache.js"></script>
 <script src="js/jquery.min.js"></script>
 <script>
@@ -40,6 +41,10 @@ var INTERESTING_HEADERS = [
 ];
 
 var headerValueMassagers = {
+  "content-type": function(value) {
+    var type = Mimeparse.parseMimeType(value);
+    return Mustache.escape(type[0] + '/' + type[1]);
+  },
   "content-length": function(value) {
     // http://stackoverflow.com/questions/2901102/how-to-print-number-with-commas-as-thousands-separators-in-javascript
     function numberWithCommas(x) {
