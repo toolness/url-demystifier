@@ -39,11 +39,24 @@ var INTERESTING_HEADERS = [
   "last-modified",
   "location"
 ];
+var MIMETYPE_HELP = {
+  'application/x-javascript': 'http://en.wikipedia.org/wiki/JavaScript',
+  'application/javascript': 'http://en.wikipedia.org/wiki/JavaScript',
+  'text/javascript': 'http://en.wikipedia.org/wiki/JavaScript',
+  'image/jpeg': 'http://en.wikipedia.org/wiki/JPEG',
+  'image/svg+xml': 'http://en.wikipedia.org/wiki/Scalable_Vector_Graphics',
+  'image/png': 'http://en.wikipedia.org/wiki/Portable_Network_Graphics',
+  'image/gif': 'http://en.wikipedia.org/wiki/Graphics_Interchange_Format'
+};
 
 var headerValueMassagers = {
   "content-type": function(value) {
     var type = Mimeparse.parseMimeType(value);
-    return Mustache.escape(type[0] + '/' + type[1]);
+    var unescapedType = type[0] + '/' + type[1];
+    type = Mustache.escape(unescapedType);
+    var helpURL = MIMETYPE_HELP[unescapedType] ||
+                  ('http://duckduckgo.com/?q=wikipedia%20' + type + '%20!');
+    return '<a href="' + helpURL + '">' + type + '</a>';
   },
   "content-length": function(value) {
     // http://stackoverflow.com/questions/2901102/how-to-print-number-with-commas-as-thousands-separators-in-javascript
