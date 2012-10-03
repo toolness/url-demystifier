@@ -159,12 +159,15 @@ function showURLInfo() {
           has_headers: false,
           headers: [],
           is_embeddable: false,
-          embed_html: null
+          embed_html: null,
+          sets_cookie: false
         };
         if (headers['location'])
           headers = {location: headers['location']};
         if (!headers['content-type'])
           headers['content-type'] = '';
+        if (headers['set-cookie'])
+          ctx.sets_cookie = true;
         if (headers['content-type'].match(/^text\/html/) &&
             !headers['x-frame-options']) {
           ctx.is_embeddable = true;
